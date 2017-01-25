@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<widget id="DataGridColumnSearch.widget.DataGridColumnSearch" needsEntityContext="false" xmlns="http://www.mendix.com/widget/1.0/">
+    <name>DataGridColumnSearch</name>
+    <description>The description of this widget.</description>
+
+    <icon />
+
+    <properties>
+		<property key="targetGridName" type="string" required="true" defaultValue="">
+            <caption>Grid Name</caption>
+            <category>Behavior</category>
+            <description>The name of the grid on this page, as configured in the modeler.</description>
+        </property>
+		<property key="gridEntity" type="entity" required="true" >
+            <caption>Grid Entity</caption>
+            <category>Behavior</category>
+            <description>The type of objects in the grid.</description>
+        </property>
+    </properties>
+</widget>

@@ -1,0 +1,12 @@
+.mx-datagrid-head th .dataGridSearchField {
+	margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 5px;
+    font-weight: normal;
+    width: 95%;
+	text-align: inherit;
+}
+
+.mx-datagrid-head th {
+	vertical-align: top !important;
+}
