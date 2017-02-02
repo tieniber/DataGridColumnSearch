@@ -55,7 +55,7 @@ define([
         _updateRendering: function (callback) {
             logger.debug(this.id + "._updateRendering");
 
-			var gridNode = dojoQuery(".mx-name-" + this.targetGridName)[0];
+			var gridNode = dojoQuery(".mx-name-" + this.targetGridName, this.domNode.parentNode)[0];
 			if (gridNode) {
 				this._grid = dijit.registry.byNode(gridNode);
 				if (this._grid) {
@@ -73,9 +73,11 @@ define([
 			for (var i = 0; i < this._grid._gridColumnNodes.length; i++ ) {
 				var renderType = this._grid._visibleColumns[i].render
 				if (renderType === "String") {
-					this._addStringSearchBox(i, "contains");
+					this._addStringSearchBox(i, "contains", "search");
 				} else if (renderType === "Integer" || renderType === "Long") {
-					this._addStringSearchBox(i, "starts-with");
+					this._addStringSearchBox(i, "starts-with", "search");
+				} else if (renderType == "Date") {
+					this._addDateSearchBox(i);
 				} else if (renderType == "Enum") {
 					this._addEnumSearchBox(i);
 				} else if (renderType == "Boolean") {
@@ -83,22 +85,47 @@ define([
 				}
 			}
 		},
-		_addStringSearchBox: function(i, searchType) {
+		_addStringSearchBox: function(i, searchType, inputType) {
 			var searchNode = dojoConstruct.create("input");
 			var searchAttr = this._grid._visibleColumns[i].attrs[0];
 			var searchObj = {"attr": searchAttr, "node": searchNode, "searchType": searchType};
 
-			searchNode.type = "search";
-			searchNode.placeholder = "(filter)";
+			var DOMContainer = this._buildDOMContainer();
+			this._grid._gridColumnNodes[i].appendChild(DOMContainer);
+
+			searchNode.type = inputType;
 			dojoClass.add(searchNode, "form-control");
 			dojoClass.add(searchNode, "dataGridSearchField");
 
-			this._grid._gridColumnNodes[i].appendChild(searchNode);
+			DOMContainer.appendChild(searchNode);
 			this._searchBoxes.push(searchObj);
 
 			this.connect(searchNode, "keyup", "_doSearch");
 			this.connect(searchNode, "click", "_ignore");
 			this.connect(searchNode, "keypress", "_ignore");
+			this.connect(searchNode, "keypress", "_escapeReset");
+		},
+		_addDateSearchBox: function(i) {
+			var datePicker = mxui.widget.DatePicker();
+			datePicker.startup();
+
+			var searchNode = datePicker.domNode.children[1].children[0];
+			var searchAttr = this._grid._visibleColumns[i].attrs[0];
+			var searchObj = {"attr": searchAttr, "node": searchNode, "searchType": "date", "widget": datePicker};
+
+			var DOMContainer = this._buildDOMContainer();
+			this._grid._gridColumnNodes[i].appendChild(DOMContainer);
+
+			dojoClass.add(searchNode, "dataGridSearchField");
+
+			DOMContainer.appendChild(datePicker.domNode);
+			this._searchBoxes.push(searchObj);
+
+			this.connect(searchNode, "keyup", "_doSearch");
+			this.connect(searchNode, "click", "_ignore");
+			this.connect(searchNode, "keypress", "_ignore");
+			this.connect(searchNode, "keypress", "_escapeReset");
+			this.connect(datePicker, "onChange", "_doSearch");
 		},
 		_addEnumSearchBox: function(i) {
 			var searchNode = dojoConstruct.create("select");
@@ -109,7 +136,12 @@ define([
 				, "searchType": "equals"
 			};
 
-			var enumMap = mx.metadata.getEntity(this.gridEntity).getEnumMap(searchAttr);
+			var enumMap;
+			if (mx.meta) {
+				enumMap = mx.meta.getEntity(this.gridEntity).getEnumMap(searchAttr); //used in 6.10.3
+			} else {
+				enumMap = mx.metadata.getEntity(this.gridEntity).getEnumMap(searchAttr); //used in 5.20
+			}
 
 			var optionNodeEmpty = dojoConstruct.create("option");
 			optionNodeEmpty.innerHTML = "";
@@ -123,17 +155,21 @@ define([
 				searchNode.appendChild(optionNode);
 			}
 
+			var DOMContainer = this._buildDOMContainer();
+			this._grid._gridColumnNodes[i].appendChild(DOMContainer);
+
 			//searchNode.type = "search";
 			//searchNode.placeholder = "(filter)";
 			dojoClass.add(searchNode, "form-control");
 			dojoClass.add(searchNode, "dataGridSearchField");
 
-			this._grid._gridColumnNodes[i].appendChild(searchNode);
+			DOMContainer.appendChild(searchNode);
 			this._searchBoxes.push(searchObj);
 
 			this.connect(searchNode, "onchange", "_doSearch");
 			this.connect(searchNode, "click", "_ignore");
 			this.connect(searchNode, "keypress", "_ignore");
+			this.connect(searchNode, "keypress", "_escapeReset");
 		},
 		_addBooleanSearchBox: function(i) {
 			var searchNode = dojoConstruct.create("select");
@@ -164,25 +200,55 @@ define([
 			dojoClass.add(searchNode, "form-control");
 			dojoClass.add(searchNode, "dataGridSearchField");
 
-			this._grid._gridColumnNodes[i].appendChild(searchNode);
+			var DOMContainer = this._buildDOMContainer();
+			this._grid._gridColumnNodes[i].appendChild(DOMContainer);
+
+			DOMContainer.appendChild(searchNode);
 			this._searchBoxes.push(searchObj);
 
 			this.connect(searchNode, "onchange", "_doSearch");
 			this.connect(searchNode, "click", "_ignore");
 			this.connect(searchNode, "keypress", "_ignore");
+			this.connect(searchNode, "keypress", "_escapeReset");
 		},
+		_buildDOMContainer: function() {
+			var domContainer = dojoConstruct.create("div");
+			dojoClass.add(domContainer, "dataGridSearchContainer");
+
+			var icon = dojoConstruct.create("i");
+			dojoClass.add(icon, "glyphicon glyphicon-search");
+			domContainer.appendChild(icon);
+
+			return domContainer;
+		},
+
 		_getSearchString: function(searchObj) {
-			if (searchObj.searchType === "contains" || searchObj.searchType === "starts-with") {
-				return searchObj.searchType + "(" + searchObj.attr + ",'" + searchObj.node.value + "')";
-			} else if (searchObj.searchType === "equals") {
-				return "(" + searchObj.attr + "= '" + searchObj.node.value + "')";
-			} else if (searchObj.searchType === "boolean") {
-				if (searchObj.node.value === "true") {
-					return "(" + searchObj.attr + ")";
-				} else {
-					return "not(" + searchObj.attr + ")";
-				}
-			} else return "";
+			switch (searchObj.searchType) {
+				case "contains":
+				case "starts-with":
+					return searchObj.searchType + "(" + searchObj.attr + ",'" + searchObj.node.value + "')";
+				case "equals":
+					return "(" + searchObj.attr + "= '" + searchObj.node.value + "')";
+				case "boolean":
+					if (searchObj.node.value === "true") {
+					   return "(" + searchObj.attr + ")";
+					} else {
+					   return "not(" + searchObj.attr + ")";
+					}
+				case "date":
+					var theDate = searchObj.widget._getValueAttr();
+					var year = theDate.getFullYear();
+					var month = theDate.getMonth()+1;
+					var day = theDate.getDate();
+					var queryString = "(";
+					queryString += "year-from-dateTime(" +searchObj.attr + ") = " +  year;
+					queryString += " and month-from-dateTime(" +searchObj.attr + ") = " +  month;
+					queryString += " and day-from-dateTime(" +searchObj.attr + ") = " +  day;
+					queryString += ")"
+					return queryString;
+				default:
+					return "";
+			}
 		},
 		_getSearchConstraint: function() {
 	        var searchParams = []
@@ -215,6 +281,19 @@ define([
 		},
 		_ignore: function(e) {
 			e.stopPropagation();
+		},
+		_escapeReset: function(e) {
+			if (e.keyCode == 27) { // escape key maps to keycode `27`
+	        	for (var i=0; i<this._searchBoxes.length; i++) {
+					var element = this._searchBoxes[i].node;
+					if (element.tagName === "SELECT"){
+						element.selectedIndex = 0;
+					} else if (element.tagName === "INPUT"){
+						element.value = "";
+					}
+					this._doSearch();
+				}
+    		}
 		}
     });
 });

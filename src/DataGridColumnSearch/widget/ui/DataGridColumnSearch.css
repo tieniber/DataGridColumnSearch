@@ -5,8 +5,26 @@
     font-weight: normal;
     width: 95%;
 	text-align: inherit;
+	padding-left: 25px;
+}
+
+select.dataGridSearchField {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
 }
 
 .mx-datagrid-head th {
 	vertical-align: top !important;
+}
+
+.dataGridSearchContainer {
+	position: relative;
+}
+
+.dataGridSearchContainer i {
+	position: absolute;
+    top: 10px;
+    left: 13px;
+    color: gray;
 }
