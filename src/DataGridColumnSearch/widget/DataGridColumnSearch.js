@@ -216,6 +216,7 @@ define([
 			dojoClass.add(domContainer, "dataGridSearchContainer");
 
 			var icon = dojoConstruct.create("i");
+			this.connect(icon, "click", "_ignore");
 			dojoClass.add(icon, "glyphicon glyphicon-search");
 			domContainer.appendChild(icon);
 
