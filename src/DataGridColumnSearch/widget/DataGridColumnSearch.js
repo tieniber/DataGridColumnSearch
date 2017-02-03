@@ -77,7 +77,8 @@ define([
 				} else if (renderType === "Integer" || renderType === "Long") {
 					this._addStringSearchBox(i, "starts-with", "search");
 				} else if (renderType == "Date") {
-					this._addDateSearchBox(i);
+					var format = this._grid._visibleColumns[i].display.format;
+					this._addDateSearchBox(i, format);
 				} else if (renderType == "Enum") {
 					this._addEnumSearchBox(i);
 				} else if (renderType == "Boolean") {
@@ -105,8 +106,14 @@ define([
 			this.connect(searchNode, "keypress", "_ignore");
 			this.connect(searchNode, "keypress", "_escapeReset");
 		},
-		_addDateSearchBox: function(i) {
-			var datePicker = mxui.widget.DatePicker();
+		_addDateSearchBox: function(i, format) {
+			var datePicker = mxui.widget.DatePicker(
+				{
+					"format": format,
+					"placeholder": format
+				});
+
+			datePicker.buildRendering();
 			datePicker.startup();
 
 			var searchNode = datePicker.domNode.children[1].children[0];
