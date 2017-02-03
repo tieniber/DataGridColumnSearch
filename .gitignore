@@ -6,6 +6,14 @@ test/theme/
 test/userlib/
 test/.classpath
 test/.project
+test6.10.3/javasource/
+test6.10.3/deployment/
+test6.10.3/.classpath
+test6.10.3/.project
+test6.10.3/theme/
+test6.10.3/userlib/
+test6.10.3/.classpath
+test6.10.3/.project
 *.launch
 *.tmp
 *.lock
