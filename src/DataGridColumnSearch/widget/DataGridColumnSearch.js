@@ -237,6 +237,9 @@ define([
 					}
 				case "date":
 					var theDate = searchObj.widget._getValueAttr();
+					if (!theDate) {
+						return "";
+					}
 					var year = theDate.getFullYear();
 					var month = theDate.getMonth()+1;
 					var day = theDate.getDate();

@@ -28,3 +28,16 @@ select.dataGridSearchField {
     left: 13px;
     color: gray;
 }
+
+.dataGridSearchContainer .mx-dateinput-select-button {
+    position: absolute;
+    background-color: transparent;
+    right: 0px;
+    outline:0;
+}
+
+.dataGridSearchContainer .mx-dateinput-select-button:hover,
+.dataGridSearchContainer .mx-dateinput-select-button:focus {
+    color: gray;
+    outline:0 !important;
+}
