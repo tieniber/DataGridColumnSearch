@@ -260,7 +260,10 @@ define([
 
             for (var i = 0, sBox; sBox = searchBoxes[i]; ++i) {
 				if(sBox.node.value !== "") {
-					searchParams.push(this._getSearchString(sBox));
+					var searchString = this._getSearchString(sBox);
+					if (searchString !== "") {
+						searchParams.push(searchString);
+					}
 				}
             }
 
