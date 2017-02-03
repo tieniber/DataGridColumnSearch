@@ -2,7 +2,7 @@
 
 ## Description
 
-This Mendix widget adds interactive in-column searching to the Mendix data grid.
+This Mendix widget adds interactive in-column searching to the Mendix data grid. Filters work in an "AND" configuration, just like Excel.
 
 ![Not Searching](https://github.com/tieniber/DataGridColumnSearch/blob/master/assets/Normal.png)
 
