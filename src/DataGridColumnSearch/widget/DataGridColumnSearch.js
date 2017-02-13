@@ -120,11 +120,19 @@ define([
 			var searchNode = datePicker.domNode.children[1].children[0];
 			var searchAttr = this._grid._visibleColumns[i].tag;
 
+
+			var columnEntity = this.gridEntity;
+			var currentColumn = this._grid._visibleColumns[i];
+			var columnAttribute = currentColumn.attrs[currentColumn.attrs.length - 1];
+			if (currentColumn.attrs.length > 1) {
+				columnEntity = currentColumn.attrs[currentColumn.attrs.length - 2];
+			}
+
 			var localized = false;
 			if (mx.meta) {
-				localized = mx.meta.getEntity(this.gridEntity).isLocalizedDate(searchAttr); //used in 6.10.3
+				localized = mx.meta.getEntity(columnEntity).isLocalizedDate(columnAttribute); //used in 6.10.3
 			} else {
-				localized = mx.metadata.getEntity(this.gridEntity).isLocalizedDate(searchAttr); //used in 5.20
+				localized = mx.metadata.getEntity(columnEntity).isLocalizedDate(columnAttribute); //used in 5.20
 			}
 
 			var searchObj = {"attr": searchAttr, "node": searchNode, "searchType": "date", "widget": datePicker, "localized": localized};
@@ -151,11 +159,18 @@ define([
 				, "searchType": "equals"
 			};
 
+			var columnEntity = this.gridEntity;
+			var currentColumn = this._grid._visibleColumns[i];
+			var columnAttribute = currentColumn.attrs[currentColumn.attrs.length - 1];
+			if (currentColumn.attrs.length > 1) {
+				columnEntity = currentColumn.attrs[currentColumn.attrs.length - 2];
+			}
 			var enumMap;
+
 			if (mx.meta) {
-				enumMap = mx.meta.getEntity(this.gridEntity).getEnumMap(searchAttr); //used in 6.10.3
+				enumMap = mx.meta.getEntity(columnEntity).getEnumMap(columnAttribute); //used in 6.10.3
 			} else {
-				enumMap = mx.metadata.getEntity(this.gridEntity).getEnumMap(searchAttr); //used in 5.20
+				enumMap = mx.metadata.getEntity(columnEntity).getEnumMap(columnAttribute); //used in 5.20
 			}
 
 			var optionNodeEmpty = dojoConstruct.create("option");
