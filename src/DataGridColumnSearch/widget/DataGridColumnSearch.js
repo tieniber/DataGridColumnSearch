@@ -27,6 +27,7 @@ define([
         _handles: null,
         _contextObj: null,
 		_searchBoxes:null,
+		_MS_IN_DAY: 24 * 60 * 60 * 1000,
 
         constructor: function () {
             this._handles = [];
@@ -88,7 +89,7 @@ define([
 		},
 		_addStringSearchBox: function(i, searchType, inputType) {
 			var searchNode = dojoConstruct.create("input");
-			var searchAttr = this._grid._visibleColumns[i].attrs[0];
+			var searchAttr = this._grid._visibleColumns[i].tag;
 			var searchObj = {"attr": searchAttr, "node": searchNode, "searchType": searchType};
 
 			var DOMContainer = this._buildDOMContainer();
@@ -117,9 +118,16 @@ define([
 			datePicker.startup();
 
 			var searchNode = datePicker.domNode.children[1].children[0];
-			var searchAttr = this._grid._visibleColumns[i].attrs[0];
-			var searchObj = {"attr": searchAttr, "node": searchNode, "searchType": "date", "widget": datePicker};
+			var searchAttr = this._grid._visibleColumns[i].tag;
 
+			var localized = false;
+			if (mx.meta) {
+				localized = mx.meta.getEntity(this.gridEntity).isLocalizedDate(searchAttr); //used in 6.10.3
+			} else {
+				localized = mx.metadata.getEntity(this.gridEntity).isLocalizedDate(searchAttr); //used in 5.20
+			}
+
+			var searchObj = {"attr": searchAttr, "node": searchNode, "searchType": "date", "widget": datePicker, "localized": localized};
 			var DOMContainer = this._buildDOMContainer();
 			this._grid._gridColumnNodes[i].appendChild(DOMContainer);
 
@@ -136,7 +144,7 @@ define([
 		},
 		_addEnumSearchBox: function(i) {
 			var searchNode = dojoConstruct.create("select");
-			var searchAttr = this._grid._visibleColumns[i].attrs[0];
+			var searchAttr = this._grid._visibleColumns[i].tag;
 			var searchObj = {
 				  "attr": searchAttr
 				, "node": searchNode
@@ -180,7 +188,7 @@ define([
 		},
 		_addBooleanSearchBox: function(i) {
 			var searchNode = dojoConstruct.create("select");
-			var searchAttr = this._grid._visibleColumns[i].attrs[0];
+			var searchAttr = this._grid._visibleColumns[i].tag;
 			var searchObj = {
 				  "attr": searchAttr
 				, "node": searchNode
@@ -231,12 +239,14 @@ define([
 		},
 
 		_getSearchString: function(searchObj) {
+			var cleanSearchValue = searchObj.node.value.replace(/'/g,"");
+
 			switch (searchObj.searchType) {
 				case "contains":
 				case "starts-with":
-					return searchObj.searchType + "(" + searchObj.attr + ",'" + searchObj.node.value + "')";
+					return searchObj.searchType + "(" + searchObj.attr + ",'" + cleanSearchValue + "')";
 				case "equals":
-					return "(" + searchObj.attr + "= '" + searchObj.node.value + "')";
+					return "(" + searchObj.attr + "= '" + cleanSearchValue + "')";
 				case "boolean":
 					if (searchObj.node.value === "true") {
 					   return "(" + searchObj.attr + ")";
@@ -248,13 +258,15 @@ define([
 					if (!theDate) {
 						return "";
 					}
-					var year = theDate.getFullYear();
-					var month = theDate.getMonth()+1;
-					var day = theDate.getDate();
+					var today = theDate.getTime();
+					var tomorrow = theDate.getTime() + this._MS_IN_DAY;
 					var queryString = "(";
-					queryString += "year-from-dateTime(" +searchObj.attr + ") = " +  year;
-					queryString += " and month-from-dateTime(" +searchObj.attr + ") = " +  month;
-					queryString += " and day-from-dateTime(" +searchObj.attr + ") = " +  day;
+
+
+					queryString += searchObj.attr + ">=" + today;
+					queryString += " and ";
+					queryString += searchObj.attr + "<" + tomorrow;
+
 					queryString += ")"
 					return queryString;
 				default:
