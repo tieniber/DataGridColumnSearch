@@ -258,6 +258,12 @@ define([
 					if (!theDate) {
 						return "";
 					}
+
+					if (!searchObj.localized) {
+						var deLocalizedDate = window.mx.parser.delocalizeEpoch(theDate);
+						theDate = new Date(deLocalizedDate);
+					}
+
 					var today = theDate.getTime();
 					var tomorrow = theDate.getTime() + this._MS_IN_DAY;
 					var queryString = "(";
