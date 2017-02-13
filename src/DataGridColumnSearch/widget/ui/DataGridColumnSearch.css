@@ -25,7 +25,8 @@ select.dataGridSearchField {
 .dataGridSearchContainer i {
 	position: absolute;
     top: 10px;
-    left: 13px;
+    left: 2.5%;
+	margin-left: 9px;
     color: gray;
 }
 
