@@ -28,6 +28,7 @@ define([
         _contextObj: null,
 		_searchBoxes:null,
 		_MS_IN_DAY: 24 * 60 * 60 * 1000,
+		_dataType: '',
 
         constructor: function () {
             this._handles = [];
@@ -61,11 +62,16 @@ define([
 				this._grid = dijit.registry.byNode(gridNode);
 				if (this._grid) {
 					this._addSearchBoxes();
+					if (this._grid._dataSource && this._grid._dataSource._microflow) {
+						this._dataType = 'microflow';
+					} else {
+						this._dataType = 'xpath'
+					}
 				} else {
 					console.log("Found a DOM node but could not find the grid widget.");
 				}
 			} else {
-				console.log("Could not find the list view node.");
+				console.log("Could not find the grid node.");
 			}
 
             mendix.lang.nullExec(callback);
@@ -253,11 +259,11 @@ define([
 			return domContainer;
 		},
 
-		_getSearchString: function(searchObj) {
+		_getXPathSearchString: function(searchObj) {
 			var cleanSearchValue = searchObj.node.value.replace(/'/g,"");
 
 			switch (searchObj.searchType) {
-				case "contains":
+				case "contains": //fall-through intentional
 				case "starts-with":
 					return searchObj.searchType + "(" + searchObj.attr + ",'" + cleanSearchValue + "')";
 				case "equals":
@@ -294,13 +300,14 @@ define([
 					return "";
 			}
 		},
-		_getSearchConstraint: function() {
+
+		_getXPathSearchConstraint: function() {
 	        var searchParams = []
 	          , searchBoxes = this._searchBoxes;
 
             for (var i = 0, sBox; sBox = searchBoxes[i]; ++i) {
 				if(sBox.node.value !== "") {
-					var searchString = this._getSearchString(sBox);
+					var searchString = this._getXPathSearchString(sBox);
 					if (searchString !== "") {
 						searchParams.push(searchString);
 					}
@@ -312,19 +319,95 @@ define([
 			} else
 			return "";
 		},
+		_buildMicroflowSearchFunction: function(searchObj) {
+			var cleanSearchValue = searchObj.node.value.replace(/'/g,"").toLowerCase();
+			var searchAttr = searchObj.attr;
+
+			switch (searchObj.searchType) {
+				case "contains":
+					return function(rowObj) {
+						return rowObj.jsonData.attributes[searchAttr].value.toString().toLowerCase().includes(cleanSearchValue);
+					}
+				case "starts-with":
+					return function(rowObj) {
+						return rowObj.jsonData.attributes[searchAttr].value.toString().toLowerCase().indexOf(cleanSearchValue) === 0;
+					}
+				case "equals":
+					return function(rowObj) {
+						return rowObj.jsonData.attributes[searchAttr].value.toString().toLowerCase() === cleanSearchValue;
+					}
+				case "boolean":
+					return function(rowObj) {
+						return rowObj.jsonData.attributes[searchAttr].value.toString() === searchObj.node.value;
+					}
+				case "date":
+					var theDate = searchObj.widget._getValueAttr();
+					if (!theDate) {
+						return null;
+					}
+
+					if (!searchObj.localized) {
+						var deLocalizedDate = window.mx.parser.delocalizeEpoch(theDate);
+						theDate = new Date(deLocalizedDate);
+					}
+
+					var today = theDate.getTime();
+					var tomorrow = theDate.getTime() + this._MS_IN_DAY;
+
+					return function(rowObj) {
+						return rowObj.jsonData.attributes[searchAttr].value >= today && rowObj.jsonData.attributes[searchAttr].value < tomorrow;
+					}
+				default:
+					return null;
+			}
+		},
+		buildMicroflowFilter: function() {
+			var datasource = this._grid._dataSource;
+			var searchBoxes = this._searchBoxes;
+			var columnFilterFunctions= [];
+
+			for (var i = 0, sBox; sBox = searchBoxes[i]; ++i) {
+				if(sBox.node.value !== "") {
+					var filterFunction = this._buildMicroflowSearchFunction(sBox);
+					if (filterFunction) {
+						columnFilterFunctions.push(filterFunction);
+					}
+				}
+			}
+
+			datasource._filter =  function(rowObj) {
+
+				for (var i = 0, colFunc; colFunc =  columnFilterFunctions[i]; ++i) {
+					if (!colFunc(rowObj)) {
+						return false;
+					}
+				}
+
+				return true;
+			};
+		},
 		_doSearch: function () {
 			var grid = this._grid
-			  , datasource = grid._datasource
+			  , datasource = grid._dataSource
 			  , self= this;
 
-			if (!datasource) {
-				 datasource = grid._dataSource;
-			}
 			clearTimeout(this._searchTimeout);
-			this._searchTimeout = setTimeout(function() {
-				datasource.setConstraints(self._getSearchConstraint());
-				grid.reload();
-			}, 500);
+
+			if (this._dataType === 'xpath') {
+				this._searchTimeout = setTimeout(function() {
+					datasource.setConstraints(self._getXPathSearchConstraint());
+					grid.reload();
+				}, 500);
+			} else if (this._dataType === 'microflow') {
+				this._searchTimeout = setTimeout(function() {
+
+					self.buildMicroflowFilter();
+					datasource._objs = datasource._holdObjs.filter(datasource._filter);
+					datasource.refresh();
+					grid.refreshGrid();
+				}, 500);
+			}
+
 		},
 		_ignore: function(e) {
 			e.stopPropagation();
