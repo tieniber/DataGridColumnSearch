@@ -62,10 +62,17 @@ define([
 				this._grid = dijit.registry.byNode(gridNode);
 				if (this._grid) {
 					this._addSearchBoxes();
-					if (this._grid._dataSource && this._grid._dataSource._microflow) {
-						this._dataType = 'microflow';
-					} else {
-						this._dataType = 'xpath'
+					switch (this._grid.config.datasource.type) {
+						case "entityPath":
+						case "microflow":
+							this._dataType = "local";
+							break;
+						case "xpath":
+							this._dataType = "xpath";
+							break;
+						default:
+							this._dataType = "unsupported";
+							break;
 					}
 				} else {
 					console.log("Found a DOM node but could not find the grid widget.");
@@ -326,19 +333,19 @@ define([
 			switch (searchObj.searchType) {
 				case "contains":
 					return function(rowObj) {
-						return rowObj.jsonData.attributes[searchAttr].value.toString().toLowerCase().includes(cleanSearchValue);
+						return rowObj.get(searchAttr).toString().toLowerCase().includes(cleanSearchValue);
 					}
 				case "starts-with":
 					return function(rowObj) {
-						return rowObj.jsonData.attributes[searchAttr].value.toString().toLowerCase().indexOf(cleanSearchValue) === 0;
+						return rowObj.get(searchAttr).toString().toLowerCase().indexOf(cleanSearchValue) === 0;
 					}
 				case "equals":
 					return function(rowObj) {
-						return rowObj.jsonData.attributes[searchAttr].value.toString().toLowerCase() === cleanSearchValue;
+						return rowObj.get(searchAttr).toString().toLowerCase() === cleanSearchValue;
 					}
 				case "boolean":
 					return function(rowObj) {
-						return rowObj.jsonData.attributes[searchAttr].value.toString() === searchObj.node.value;
+						return rowObj.get(searchAttr).toString() === searchObj.node.value;
 					}
 				case "date":
 					var theDate = searchObj.widget._getValueAttr();
@@ -355,7 +362,7 @@ define([
 					var tomorrow = theDate.getTime() + this._MS_IN_DAY;
 
 					return function(rowObj) {
-						return rowObj.jsonData.attributes[searchAttr].value >= today && rowObj.jsonData.attributes[searchAttr].value < tomorrow;
+						return rowObj.get(searchAttr) >= today && rowObj.get(searchAttr) < tomorrow;
 					}
 				default:
 					return null;
@@ -398,16 +405,14 @@ define([
 					datasource.setConstraints(self._getXPathSearchConstraint());
 					grid.reload();
 				}, 500);
-			} else if (this._dataType === 'microflow') {
+			} else if (this._dataType === 'local') {
 				this._searchTimeout = setTimeout(function() {
-
 					self.buildMicroflowFilter();
 					datasource._objs = datasource._holdObjs.filter(datasource._filter);
 					datasource.refresh();
 					grid.refreshGrid();
 				}, 500);
 			}
-
 		},
 		_ignore: function(e) {
 			e.stopPropagation();
