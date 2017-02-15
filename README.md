@@ -4,6 +4,8 @@
 
 This Mendix widget adds interactive in-column searching to the Mendix data grid. Filters work in an "AND" configuration, just like Excel.
 
+Also, for the first time, you can search within data grids that are sourced via microflow or association!
+
 ![Not Searching](https://github.com/tieniber/DataGridColumnSearch/blob/master/assets/Normal.png)
 
 ![Searching](https://github.com/tieniber/DataGridColumnSearch/blob/master/assets/Searching.png)
@@ -24,7 +26,7 @@ The following data types are supported:
  - String
  - Integer
  - Long
- - Date
+ - Date (localized and non-localized)
  - Enumeration
  - Boolean
  - AutoNumber
@@ -35,4 +37,7 @@ Testing was completed in Mendix 5.21.4 and Mendix 6.10.3, on Chrome, IE, Firefox
 
 ## Limitations
 
-This widget only works with data grids that source their data via XPath. This is required because the live searching feature sends new search commands directly to the application's database as you type.
+This widget has not been tested against the newest data source for the data grid: Database. It does support the following data sources:
+ - Microflow 
+ - Association
+ - XPath (previously labeled "Database" in Mendix 5)
