@@ -14,422 +14,435 @@ define([
     "dojo/text",
     "dojo/html",
     "dojo/_base/event",
-	"dojo/query",
+    "dojo/query",
 
 
-], function (declare, _WidgetBase, dom, dojoDom, dojoProp, dojoGeometry, dojoClass, dojoStyle, dojoConstruct, dojoArray, dojoLang, dojoText, dojoHtml, dojoEvent, dojoQuery) {
+], function(declare, _WidgetBase, dom, dojoDom, dojoProp, dojoGeometry, dojoClass, dojoStyle, dojoConstruct, dojoArray, dojoLang, dojoText, dojoHtml, dojoEvent, dojoQuery) {
     "use strict";
 
-    return declare("DataGridColumnSearch.widget.DataGridColumnSearch", [ _WidgetBase ], {
+    return declare("DataGridColumnSearch.widget.DataGridColumnSearch", [_WidgetBase], {
 
 
         // Internal variables.
         _handles: null,
         _contextObj: null,
-		_searchBoxes:null,
-		_MS_IN_DAY: 24 * 60 * 60 * 1000,
-		_dataType: '',
+        _searchBoxes: null,
+        _MS_IN_DAY: 24 * 60 * 60 * 1000,
+        _dataType: '',
 
-        constructor: function () {
+        constructor: function() {
             this._handles = [];
-			this._searchBoxes = [];
+            this._searchBoxes = [];
         },
 
-        postCreate: function () {
+        postCreate: function() {
             logger.debug(this.id + ".postCreate");
         },
 
-        update: function (obj, callback) {
+        update: function(obj, callback) {
             logger.debug(this.id + ".update");
 
             this._contextObj = obj;
             this._updateRendering(callback);
         },
 
-        resize: function (box) {
-          logger.debug(this.id + ".resize");
+        resize: function(box) {
+            logger.debug(this.id + ".resize");
         },
 
-        uninitialize: function () {
-          logger.debug(this.id + ".uninitialize");
+        uninitialize: function() {
+            logger.debug(this.id + ".uninitialize");
         },
 
-        _updateRendering: function (callback) {
+        _updateRendering: function(callback) {
             logger.debug(this.id + "._updateRendering");
 
-			var gridNode = dojoQuery(".mx-name-" + this.targetGridName, this.domNode.parentNode)[0];
-			if (gridNode) {
-				this._grid = dijit.registry.byNode(gridNode);
-				if (this._grid) {
-					this._addSearchBoxes();
-					switch (this._grid.config.datasource.type) {
-						case "entityPath":
-						case "microflow":
-							this._dataType = "local";
-							break;
-						case "xpath":
-							this._dataType = "xpath";
-							break;
-						default:
-							this._dataType = "unsupported";
-							break;
-					}
-				} else {
-					console.log("Found a DOM node but could not find the grid widget.");
-				}
-			} else {
-				console.log("Could not find the grid node.");
-			}
+            var gridNode = dojoQuery(".mx-name-" + this.targetGridName, this.domNode.parentNode)[0];
+            if (gridNode) {
+                this._grid = dijit.registry.byNode(gridNode);
+                if (this._grid) {
+                    this._addSearchBoxes();
+                    switch (this._grid.config.datasource.type) {
+                        case "entityPath":
+                        case "microflow":
+                            this._dataType = "local";
+                            break;
+                        case "xpath":
+                            this._dataType = "xpath";
+                            break;
+                        default:
+                            this._dataType = "unsupported";
+                            break;
+                    }
+                } else {
+                    console.log("Found a DOM node but could not find the grid widget.");
+                }
+            } else {
+                console.log("Could not find the grid node.");
+            }
 
             mendix.lang.nullExec(callback);
         },
-		_addSearchBoxes: function() {
-			for (var i = 0; i < this._grid._gridColumnNodes.length; i++ ) {
-				var renderType = this._grid._visibleColumns[i].render
-				if (renderType === "String") {
-					this._addStringSearchBox(i, "contains", "search");
-				} else if (renderType === "Integer" || renderType === "Long") {
-					this._addStringSearchBox(i, "starts-with", "search");
-				} else if (renderType == "Date") {
-					var format = this._grid._visibleColumns[i].display.format;
-					this._addDateSearchBox(i, format);
-				} else if (renderType == "Enum") {
-					this._addEnumSearchBox(i);
-				} else if (renderType == "Boolean") {
-					this._addBooleanSearchBox(i);
-				}
-			}
-		},
-		_addStringSearchBox: function(i, searchType, inputType) {
-			var searchNode = dojoConstruct.create("input");
-			var searchAttr = this._grid._visibleColumns[i].tag;
-			var searchObj = {"attr": searchAttr, "node": searchNode, "searchType": searchType};
+        _addSearchBoxes: function() {
+            for (var i = 0; i < this._grid._gridColumnNodes.length; i++) {
+                var renderType = this._grid._visibleColumns[i].render
+                if (renderType === "String") {
+                    this._addStringSearchBox(i, "contains", "search");
+                } else if (renderType === "Integer" || renderType === "Long") {
+                    this._addStringSearchBox(i, "starts-with", "search");
+                } else if (renderType == "Date") {
+                    var format = this._grid._visibleColumns[i].display.format;
+                    this._addDateSearchBox(i, format);
+                } else if (renderType == "Enum") {
+                    this._addEnumSearchBox(i);
+                } else if (renderType == "Boolean") {
+                    this._addBooleanSearchBox(i);
+                }
+            }
+        },
+        _addStringSearchBox: function(i, searchType, inputType) {
+            var searchNode = dojoConstruct.create("input");
+            var searchAttr = this._grid._visibleColumns[i].tag;
+            var searchObj = {
+                "attr": searchAttr,
+                "node": searchNode,
+                "searchType": searchType
+            };
 
-			var DOMContainer = this._buildDOMContainer();
-			this._grid._gridColumnNodes[i].appendChild(DOMContainer);
+            var DOMContainer = this._buildDOMContainer();
+            this._grid._gridColumnNodes[i].appendChild(DOMContainer);
 
-			searchNode.type = inputType;
-			dojoClass.add(searchNode, "form-control");
-			dojoClass.add(searchNode, "dataGridSearchField");
+            searchNode.type = inputType;
+            dojoClass.add(searchNode, "form-control");
+            dojoClass.add(searchNode, "dataGridSearchField");
 
-			DOMContainer.appendChild(searchNode);
-			this._searchBoxes.push(searchObj);
+            DOMContainer.appendChild(searchNode);
+            this._searchBoxes.push(searchObj);
 
-			this.connect(searchNode, "keyup", "_doSearch");
-			this.connect(searchNode, "click", "_ignore");
-			this.connect(searchNode, "keypress", "_ignore");
-			this.connect(searchNode, "keypress", "_escapeReset");
-		},
-		_addDateSearchBox: function(i, format) {
-			var datePicker = mxui.widget.DatePicker(
-				{
-					"format": format,
-					"placeholder": format
-				});
+            this.connect(searchNode, "keyup", "_doSearch");
+            this.connect(searchNode, "click", "_ignore");
+            this.connect(searchNode, "keypress", "_ignore");
+            this.connect(searchNode, "keypress", "_escapeReset");
+        },
+        _addDateSearchBox: function(i, format) {
+            var datePicker = mxui.widget.DatePicker({
+                "format": format,
+                "placeholder": format
+            });
 
-			datePicker.buildRendering();
-			datePicker.startup();
+            datePicker.buildRendering();
+            datePicker.startup();
 
-			var searchNode = datePicker.domNode.children[1].children[0];
-			var searchAttr = this._grid._visibleColumns[i].tag;
-
-
-			var columnEntity = this.gridEntity;
-			var currentColumn = this._grid._visibleColumns[i];
-			var columnAttribute = currentColumn.attrs[currentColumn.attrs.length - 1];
-			if (currentColumn.attrs.length > 1) {
-				columnEntity = currentColumn.attrs[currentColumn.attrs.length - 2];
-			}
-
-			var localized = false;
-			if (mx.meta) {
-				localized = mx.meta.getEntity(columnEntity).isLocalizedDate(columnAttribute); //used in 6.10.3
-			} else {
-				localized = mx.metadata.getEntity(columnEntity).isLocalizedDate(columnAttribute); //used in 5.20
-			}
-
-			var searchObj = {"attr": searchAttr, "node": searchNode, "searchType": "date", "widget": datePicker, "localized": localized};
-			var DOMContainer = this._buildDOMContainer();
-			this._grid._gridColumnNodes[i].appendChild(DOMContainer);
-
-			dojoClass.add(searchNode, "dataGridSearchField");
-
-			DOMContainer.appendChild(datePicker.domNode);
-			this._searchBoxes.push(searchObj);
-
-			this.connect(searchNode, "keyup", "_doSearch");
-			this.connect(searchNode, "click", "_ignore");
-			this.connect(searchNode, "keypress", "_ignore");
-			this.connect(searchNode, "keypress", "_escapeReset");
-			this.connect(datePicker, "onChange", "_doSearch");
-		},
-		_addEnumSearchBox: function(i) {
-			var searchNode = dojoConstruct.create("select");
-			var searchAttr = this._grid._visibleColumns[i].tag;
-			var searchObj = {
-				  "attr": searchAttr
-				, "node": searchNode
-				, "searchType": "equals"
-			};
-
-			var columnEntity = this.gridEntity;
-			var currentColumn = this._grid._visibleColumns[i];
-			var columnAttribute = currentColumn.attrs[currentColumn.attrs.length - 1];
-			if (currentColumn.attrs.length > 1) {
-				columnEntity = currentColumn.attrs[currentColumn.attrs.length - 2];
-			}
-			var enumMap;
-
-			if (mx.meta) {
-				enumMap = mx.meta.getEntity(columnEntity).getEnumMap(columnAttribute); //used in 6.10.3
-			} else {
-				enumMap = mx.metadata.getEntity(columnEntity).getEnumMap(columnAttribute); //used in 5.20
-			}
-
-			var optionNodeEmpty = dojoConstruct.create("option");
-			optionNodeEmpty.innerHTML = "";
-			optionNodeEmpty.value = "";
-			searchNode.appendChild(optionNodeEmpty);
-
-			for (var j = 0; j < enumMap.length; j++) {
-				var optionNode = dojoConstruct.create("option");
-				optionNode.innerHTML = enumMap[j].caption;
-				optionNode.value = enumMap[j].key;
-				searchNode.appendChild(optionNode);
-			}
-
-			var DOMContainer = this._buildDOMContainer();
-			this._grid._gridColumnNodes[i].appendChild(DOMContainer);
-
-			//searchNode.type = "search";
-			//searchNode.placeholder = "(filter)";
-			dojoClass.add(searchNode, "form-control");
-			dojoClass.add(searchNode, "dataGridSearchField");
-
-			DOMContainer.appendChild(searchNode);
-			this._searchBoxes.push(searchObj);
-
-			this.connect(searchNode, "onchange", "_doSearch");
-			this.connect(searchNode, "click", "_ignore");
-			this.connect(searchNode, "keypress", "_ignore");
-			this.connect(searchNode, "keypress", "_escapeReset");
-		},
-		_addBooleanSearchBox: function(i) {
-			var searchNode = dojoConstruct.create("select");
-			var searchAttr = this._grid._visibleColumns[i].tag;
-			var searchObj = {
-				  "attr": searchAttr
-				, "node": searchNode
-				, "searchType": "boolean"
-			};
-
-			var optionNodeEmpty = dojoConstruct.create("option");
-			optionNodeEmpty.innerHTML = "";
-			optionNodeEmpty.value = "";
-			searchNode.appendChild(optionNodeEmpty);
-
-			var optionNodeTrue = dojoConstruct.create("option");
-			optionNodeTrue.innerHTML = "Yes";
-			optionNodeTrue.value = "true";
-			searchNode.appendChild(optionNodeTrue);
-
-			var optionNodeFalse = dojoConstruct.create("option");
-			optionNodeFalse.innerHTML = "No";
-			optionNodeFalse.value = "false";
-			searchNode.appendChild(optionNodeFalse);
-
-			//searchNode.type = "search";
-			//searchNode.placeholder = "(filter)";
-			dojoClass.add(searchNode, "form-control");
-			dojoClass.add(searchNode, "dataGridSearchField");
-
-			var DOMContainer = this._buildDOMContainer();
-			this._grid._gridColumnNodes[i].appendChild(DOMContainer);
-
-			DOMContainer.appendChild(searchNode);
-			this._searchBoxes.push(searchObj);
-
-			this.connect(searchNode, "onchange", "_doSearch");
-			this.connect(searchNode, "click", "_ignore");
-			this.connect(searchNode, "keypress", "_ignore");
-			this.connect(searchNode, "keypress", "_escapeReset");
-		},
-		_buildDOMContainer: function() {
-			var domContainer = dojoConstruct.create("div");
-			dojoClass.add(domContainer, "dataGridSearchContainer");
-
-			var icon = dojoConstruct.create("i");
-			this.connect(icon, "click", "_ignore");
-			dojoClass.add(icon, "glyphicon glyphicon-search");
-			domContainer.appendChild(icon);
-
-			return domContainer;
-		},
-
-		_getXPathSearchString: function(searchObj) {
-			var cleanSearchValue = searchObj.node.value.replace(/'/g,"");
-
-			switch (searchObj.searchType) {
-				case "contains": //fall-through intentional
-				case "starts-with":
-					return searchObj.searchType + "(" + searchObj.attr + ",'" + cleanSearchValue + "')";
-				case "equals":
-					return "(" + searchObj.attr + "= '" + cleanSearchValue + "')";
-				case "boolean":
-					if (searchObj.node.value === "true") {
-					   return "(" + searchObj.attr + ")";
-					} else {
-					   return "not(" + searchObj.attr + ")";
-					}
-				case "date":
-					var theDate = searchObj.widget._getValueAttr();
-					if (!theDate) {
-						return "";
-					}
-
-					if (!searchObj.localized) {
-						var deLocalizedDate = window.mx.parser.delocalizeEpoch(theDate);
-						theDate = new Date(deLocalizedDate);
-					}
-
-					var today = theDate.getTime();
-					var tomorrow = theDate.getTime() + this._MS_IN_DAY;
-					var queryString = "(";
+            var searchNode = datePicker.domNode.children[1].children[0];
+            var searchAttr = this._grid._visibleColumns[i].tag;
 
 
-					queryString += searchObj.attr + ">=" + today;
-					queryString += " and ";
-					queryString += searchObj.attr + "<" + tomorrow;
-
-					queryString += ")"
-					return queryString;
-				default:
-					return "";
-			}
-		},
-
-		_getXPathSearchConstraint: function() {
-	        var searchParams = []
-	          , searchBoxes = this._searchBoxes;
-
-            for (var i = 0, sBox; sBox = searchBoxes[i]; ++i) {
-				if(sBox.node.value !== "") {
-					var searchString = this._getXPathSearchString(sBox);
-					if (searchString !== "") {
-						searchParams.push(searchString);
-					}
-				}
+            var columnEntity = this.gridEntity;
+            var currentColumn = this._grid._visibleColumns[i];
+            var columnAttribute = currentColumn.attrs[currentColumn.attrs.length - 1];
+            if (currentColumn.attrs.length > 1) {
+                columnEntity = currentColumn.attrs[currentColumn.attrs.length - 2];
             }
 
-			if (searchParams.length > 0) {
-            	return "[" + searchParams.join(" and ") + "]";
-			} else
-			return "";
-		},
-		_buildMicroflowSearchFunction: function(searchObj) {
-			var cleanSearchValue = searchObj.node.value.replace(/'/g,"").toLowerCase();
-			var searchAttr = searchObj.attr;
+            var localized = false;
+            if (mx.meta) {
+                localized = mx.meta.getEntity(columnEntity).isLocalizedDate(columnAttribute); //used in 6.10.3
+            } else {
+                localized = mx.metadata.getEntity(columnEntity).isLocalizedDate(columnAttribute); //used in 5.20
+            }
 
-			switch (searchObj.searchType) {
-				case "contains":
-					return function(rowObj) {
-						return rowObj.get(searchAttr).toString().toLowerCase().includes(cleanSearchValue);
-					}
-				case "starts-with":
-					return function(rowObj) {
-						return rowObj.get(searchAttr).toString().toLowerCase().indexOf(cleanSearchValue) === 0;
-					}
-				case "equals":
-					return function(rowObj) {
-						return rowObj.get(searchAttr).toString().toLowerCase() === cleanSearchValue;
-					}
-				case "boolean":
-					return function(rowObj) {
-						return rowObj.get(searchAttr).toString() === searchObj.node.value;
-					}
-				case "date":
-					var theDate = searchObj.widget._getValueAttr();
-					if (!theDate) {
-						return null;
-					}
+            var searchObj = {
+                "attr": searchAttr,
+                "node": searchNode,
+                "searchType": "date",
+                "widget": datePicker,
+                "localized": localized
+            };
+            var DOMContainer = this._buildDOMContainer();
+            this._grid._gridColumnNodes[i].appendChild(DOMContainer);
 
-					if (!searchObj.localized) {
-						var deLocalizedDate = window.mx.parser.delocalizeEpoch(theDate);
-						theDate = new Date(deLocalizedDate);
-					}
+            dojoClass.add(searchNode, "dataGridSearchField");
 
-					var today = theDate.getTime();
-					var tomorrow = theDate.getTime() + this._MS_IN_DAY;
+            DOMContainer.appendChild(datePicker.domNode);
+            this._searchBoxes.push(searchObj);
 
-					return function(rowObj) {
-						return rowObj.get(searchAttr) >= today && rowObj.get(searchAttr) < tomorrow;
-					}
-				default:
-					return null;
-			}
-		},
-		buildMicroflowFilter: function() {
-			var datasource = this._grid._dataSource;
-			var searchBoxes = this._searchBoxes;
-			var columnFilterFunctions= [];
+            this.connect(searchNode, "keyup", "_doSearch");
+            this.connect(searchNode, "click", "_ignore");
+            this.connect(searchNode, "keypress", "_ignore");
+            this.connect(searchNode, "keypress", "_escapeReset");
+            this.connect(datePicker, "onChange", "_doSearch");
+        },
+        _addEnumSearchBox: function(i) {
+            var searchNode = dojoConstruct.create("select");
+            var searchAttr = this._grid._visibleColumns[i].tag;
+            var searchObj = {
+                "attr": searchAttr,
+                "node": searchNode,
+                "searchType": "equals"
+            };
 
-			for (var i = 0, sBox; sBox = searchBoxes[i]; ++i) {
-				if(sBox.node.value !== "") {
-					var filterFunction = this._buildMicroflowSearchFunction(sBox);
-					if (filterFunction) {
-						columnFilterFunctions.push(filterFunction);
-					}
-				}
-			}
+            var columnEntity = this.gridEntity;
+            var currentColumn = this._grid._visibleColumns[i];
+            var columnAttribute = currentColumn.attrs[currentColumn.attrs.length - 1];
+            if (currentColumn.attrs.length > 1) {
+                columnEntity = currentColumn.attrs[currentColumn.attrs.length - 2];
+            }
+            var enumMap;
 
-			datasource._filter =  function(rowObj) {
+            if (mx.meta) {
+                enumMap = mx.meta.getEntity(columnEntity).getEnumMap(columnAttribute); //used in 6.10.3
+            } else {
+                enumMap = mx.metadata.getEntity(columnEntity).getEnumMap(columnAttribute); //used in 5.20
+            }
 
-				for (var i = 0, colFunc; colFunc =  columnFilterFunctions[i]; ++i) {
-					if (!colFunc(rowObj)) {
-						return false;
-					}
-				}
+            var optionNodeEmpty = dojoConstruct.create("option");
+            optionNodeEmpty.innerHTML = "";
+            optionNodeEmpty.value = "";
+            searchNode.appendChild(optionNodeEmpty);
 
-				return true;
-			};
-		},
-		_doSearch: function () {
-			var grid = this._grid
-			  , datasource = grid._dataSource
-			  , self= this;
+            for (var j = 0; j < enumMap.length; j++) {
+                var optionNode = dojoConstruct.create("option");
+                optionNode.innerHTML = enumMap[j].caption;
+                optionNode.value = enumMap[j].key;
+                searchNode.appendChild(optionNode);
+            }
 
-			clearTimeout(this._searchTimeout);
+            var DOMContainer = this._buildDOMContainer();
+            this._grid._gridColumnNodes[i].appendChild(DOMContainer);
 
-			if (this._dataType === 'xpath') {
-				this._searchTimeout = setTimeout(function() {
-					datasource.setConstraints(self._getXPathSearchConstraint());
-					grid.reload();
-				}, 500);
-			} else if (this._dataType === 'local') {
-				this._searchTimeout = setTimeout(function() {
-					self.buildMicroflowFilter();
-					datasource._objs = datasource._holdObjs.filter(datasource._filter);
-					datasource.refresh();
-					grid.refreshGrid();
-				}, 500);
-			}
-		},
-		_ignore: function(e) {
-			e.stopPropagation();
-		},
-		_escapeReset: function(e) {
-			if (e.keyCode == 27) { // escape key maps to keycode `27`
-	        	for (var i=0; i<this._searchBoxes.length; i++) {
-					var element = this._searchBoxes[i].node;
-					if (element.tagName === "SELECT"){
-						element.selectedIndex = 0;
-					} else if (element.tagName === "INPUT"){
-						element.value = "";
-					}
-					this._doSearch();
-				}
-    		}
-		}
+            //searchNode.type = "search";
+            //searchNode.placeholder = "(filter)";
+            dojoClass.add(searchNode, "form-control");
+            dojoClass.add(searchNode, "dataGridSearchField");
+
+            DOMContainer.appendChild(searchNode);
+            this._searchBoxes.push(searchObj);
+
+            this.connect(searchNode, "onchange", "_doSearch");
+            this.connect(searchNode, "click", "_ignore");
+            this.connect(searchNode, "keypress", "_ignore");
+            this.connect(searchNode, "keypress", "_escapeReset");
+        },
+        _addBooleanSearchBox: function(i) {
+            var searchNode = dojoConstruct.create("select");
+            var searchAttr = this._grid._visibleColumns[i].tag;
+            var searchObj = {
+                "attr": searchAttr,
+                "node": searchNode,
+                "searchType": "boolean"
+            };
+
+            var optionNodeEmpty = dojoConstruct.create("option");
+            optionNodeEmpty.innerHTML = "";
+            optionNodeEmpty.value = "";
+            searchNode.appendChild(optionNodeEmpty);
+
+            var optionNodeTrue = dojoConstruct.create("option");
+            optionNodeTrue.innerHTML = "Yes";
+            optionNodeTrue.value = "true";
+            searchNode.appendChild(optionNodeTrue);
+
+            var optionNodeFalse = dojoConstruct.create("option");
+            optionNodeFalse.innerHTML = "No";
+            optionNodeFalse.value = "false";
+            searchNode.appendChild(optionNodeFalse);
+
+            //searchNode.type = "search";
+            //searchNode.placeholder = "(filter)";
+            dojoClass.add(searchNode, "form-control");
+            dojoClass.add(searchNode, "dataGridSearchField");
+
+            var DOMContainer = this._buildDOMContainer();
+            this._grid._gridColumnNodes[i].appendChild(DOMContainer);
+
+            DOMContainer.appendChild(searchNode);
+            this._searchBoxes.push(searchObj);
+
+            this.connect(searchNode, "onchange", "_doSearch");
+            this.connect(searchNode, "click", "_ignore");
+            this.connect(searchNode, "keypress", "_ignore");
+            this.connect(searchNode, "keypress", "_escapeReset");
+        },
+        _buildDOMContainer: function() {
+            var domContainer = dojoConstruct.create("div");
+            dojoClass.add(domContainer, "dataGridSearchContainer");
+
+            var icon = dojoConstruct.create("i");
+            this.connect(icon, "click", "_ignore");
+            dojoClass.add(icon, "glyphicon glyphicon-search");
+            domContainer.appendChild(icon);
+
+            return domContainer;
+        },
+
+        _getXPathSearchString: function(searchObj) {
+            var cleanSearchValue = searchObj.node.value.replace(/'/g, "");
+
+            switch (searchObj.searchType) {
+                case "contains": //fall-through intentional
+                case "starts-with":
+                    return searchObj.searchType + "(" + searchObj.attr + ",'" + cleanSearchValue + "')";
+                case "equals":
+                    return "(" + searchObj.attr + "= '" + cleanSearchValue + "')";
+                case "boolean":
+                    if (searchObj.node.value === "true") {
+                        return "(" + searchObj.attr + ")";
+                    } else {
+                        return "not(" + searchObj.attr + ")";
+                    }
+                case "date":
+                    var theDate = searchObj.widget._getValueAttr();
+                    if (!theDate) {
+                        return "";
+                    }
+
+                    if (!searchObj.localized) {
+                        var deLocalizedDate = window.mx.parser.delocalizeEpoch(theDate);
+                        theDate = new Date(deLocalizedDate);
+                    }
+
+                    var today = theDate.getTime();
+                    var tomorrow = theDate.getTime() + this._MS_IN_DAY;
+                    var queryString = "(";
+
+
+                    queryString += searchObj.attr + ">=" + today;
+                    queryString += " and ";
+                    queryString += searchObj.attr + "<" + tomorrow;
+
+                    queryString += ")"
+                    return queryString;
+                default:
+                    return "";
+            }
+        },
+
+        _getXPathSearchConstraint: function() {
+            var searchParams = [],
+                searchBoxes = this._searchBoxes;
+
+            for (var i = 0, sBox; sBox = searchBoxes[i]; ++i) {
+                if (sBox.node.value !== "") {
+                    var searchString = this._getXPathSearchString(sBox);
+                    if (searchString !== "") {
+                        searchParams.push(searchString);
+                    }
+                }
+            }
+
+            if (searchParams.length > 0) {
+                return "[" + searchParams.join(" and ") + "]";
+            } else
+                return "";
+        },
+        _buildMicroflowSearchFunction: function(searchObj) {
+            var cleanSearchValue = searchObj.node.value.replace(/'/g, "").toLowerCase();
+            var searchAttr = searchObj.attr;
+
+            switch (searchObj.searchType) {
+                case "contains":
+                    return function(rowObj) {
+                        return rowObj.get(searchAttr).toString().toLowerCase().includes(cleanSearchValue);
+                    }
+                case "starts-with":
+                    return function(rowObj) {
+                        return rowObj.get(searchAttr).toString().toLowerCase().indexOf(cleanSearchValue) === 0;
+                    }
+                case "equals":
+                    return function(rowObj) {
+                        return rowObj.get(searchAttr).toString().toLowerCase() === cleanSearchValue;
+                    }
+                case "boolean":
+                    return function(rowObj) {
+                        return rowObj.get(searchAttr).toString() === searchObj.node.value;
+                    }
+                case "date":
+                    var theDate = searchObj.widget._getValueAttr();
+                    if (!theDate) {
+                        return null;
+                    }
+
+                    if (!searchObj.localized) {
+                        var deLocalizedDate = window.mx.parser.delocalizeEpoch(theDate);
+                        theDate = new Date(deLocalizedDate);
+                    }
+
+                    var today = theDate.getTime();
+                    var tomorrow = theDate.getTime() + this._MS_IN_DAY;
+
+                    return function(rowObj) {
+                        return rowObj.get(searchAttr) >= today && rowObj.get(searchAttr) < tomorrow;
+                    }
+                default:
+                    return null;
+            }
+        },
+        buildMicroflowFilter: function() {
+            var datasource = this._grid._dataSource;
+            var searchBoxes = this._searchBoxes;
+            var columnFilterFunctions = [];
+
+            for (var i = 0, sBox; sBox = searchBoxes[i]; ++i) {
+                if (sBox.node.value !== "") {
+                    var filterFunction = this._buildMicroflowSearchFunction(sBox);
+                    if (filterFunction) {
+                        columnFilterFunctions.push(filterFunction);
+                    }
+                }
+            }
+
+            datasource._filter = function(rowObj) {
+
+                for (var i = 0, colFunc; colFunc = columnFilterFunctions[i]; ++i) {
+                    if (!colFunc(rowObj)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            };
+        },
+        _doSearch: function() {
+            var grid = this._grid,
+                datasource = grid._dataSource,
+                self = this;
+
+            if (!datasource._holdObjs) {
+                datasource._holdObjs = datasource._objs;
+            }
+
+            clearTimeout(this._searchTimeout);
+
+            if (this._dataType === 'xpath') {
+                this._searchTimeout = setTimeout(function() {
+                    datasource.setConstraints(self._getXPathSearchConstraint());
+                    grid.reload();
+                }, 500);
+            } else if (this._dataType === 'local') {
+                this._searchTimeout = setTimeout(function() {
+                    self.buildMicroflowFilter();
+                    datasource._objs = datasource._holdObjs.filter(datasource._filter);
+                    datasource.refresh();
+                    grid.refreshGrid();
+                }, 500);
+            }
+        },
+        _ignore: function(e) {
+            e.stopPropagation();
+        },
+        _escapeReset: function(e) {
+            if (e.keyCode == 27) { // escape key maps to keycode `27`
+                for (var i = 0; i < this._searchBoxes.length; i++) {
+                    var element = this._searchBoxes[i].node;
+                    if (element.tagName === "SELECT") {
+                        element.selectedIndex = 0;
+                    } else if (element.tagName === "INPUT") {
+                        element.value = "";
+                    }
+                    this._doSearch();
+                }
+            }
+        }
     });
 });
 
