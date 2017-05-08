@@ -19,7 +19,6 @@ test6.10.3/.project
 *.lock
 .idea/
 
-dist/
 
 node_modules/
 .editorconfig
