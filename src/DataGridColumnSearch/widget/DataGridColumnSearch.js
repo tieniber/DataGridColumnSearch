@@ -45,7 +45,7 @@ define([
 				this._grid = dijit.registry.byNode(gridNode);
 
 				//if grid is loaded, add the search boxes. If not, listen for the postCreate.
-				if(this._grid.isLoaded()) {
+				if(this._grid._loaded || (this._grid.isLoaded &&this._grid.isLoaded())) {
 					this._updateRendering();
 				} else {
 					dojoAspect.after(this._grid, "postCreate", function(deferred){
@@ -140,6 +140,7 @@ define([
             this.connect(searchNode, "keyup", "_doSearch");
             this.connect(searchNode, "click", "_ignore");
             this.connect(searchNode, "keypress", "_ignore");
+            this.connect(searchNode, "keydown", "_ignore");
             this.connect(searchNode, "keypress", "_escapeReset");
         },
         _addDateSearchBox: function(i, format) {
@@ -187,6 +188,7 @@ define([
             this.connect(searchNode, "keyup", "_doSearch");
             this.connect(searchNode, "click", "_ignore");
             this.connect(searchNode, "keypress", "_ignore");
+            this.connect(searchNode, "keydown", "_ignore");
             this.connect(searchNode, "keypress", "_escapeReset");
             this.connect(datePicker, "onChange", "_doSearch");
         },
@@ -239,6 +241,7 @@ define([
             this.connect(searchNode, "onchange", "_doSearch");
             this.connect(searchNode, "click", "_ignore");
             this.connect(searchNode, "keypress", "_ignore");
+            this.connect(searchNode, "keydown", "_ignore");
             this.connect(searchNode, "keypress", "_escapeReset");
         },
         _addBooleanSearchBox: function(i) {
@@ -279,6 +282,7 @@ define([
             this.connect(searchNode, "onchange", "_doSearch");
             this.connect(searchNode, "click", "_ignore");
             this.connect(searchNode, "keypress", "_ignore");
+            this.connect(searchNode, "keydown", "_ignore");
             this.connect(searchNode, "keypress", "_escapeReset");
         },
         _buildDOMContainer: function() {
@@ -426,7 +430,7 @@ define([
                 self = this;
 
             if (!datasource._holdObjs) {
-                datasource._holdObjs = datasource._objs;
+                datasource._holdObjs = datasource._allObjects || datasource._allObjs;
             }
 
             clearTimeout(this._searchTimeout);
@@ -439,8 +443,8 @@ define([
             } else if (this._dataType === 'local') {
                 this._searchTimeout = setTimeout(function() {
                     self.buildMicroflowFilter();
-                    datasource._objs = datasource._holdObjs.filter(datasource._filter);
-                    datasource.refresh();
+                    datasource._allObjects = datasource._holdObjs.filter(datasource._filter);
+                    datasource._updateClientPaging(datasource._allObjects);
                     grid.refreshGrid();
                 }, 500);
             }
