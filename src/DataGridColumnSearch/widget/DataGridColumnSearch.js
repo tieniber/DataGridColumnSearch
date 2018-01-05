@@ -64,7 +64,8 @@ define([
             this._contextObj = obj;
 			var self = this;
 			//if the grid refreshes (like in a tab set to reload), re-apply the search
-			dojoAspect.after(this._grid, "refreshGrid", function(deferred, args) {
+            //this._grid.registerToPluginEvent("triggerOnRefresh", this._doSearch.bind(this), true)
+            dojoAspect.after(this._grid, "applyContext", function(deferred, args) {
 				self._doSearch();
 				return deferred;
 			});
@@ -429,19 +430,19 @@ define([
                 datasource = grid._dataSource,
                 self = this;
 
-            if (!datasource._holdObjs) {
-                datasource._holdObjs = datasource._allObjects || datasource._allObjs;
-            }
-
             clearTimeout(this._searchTimeout);
 
             if (this._dataType === 'xpath') {
                 this._searchTimeout = setTimeout(function() {
                     datasource.setConstraints(self._getXPathSearchConstraint());
                     datasource.reload();
-                    grid.fillGrid();
+                    grid.reload();
                 }, 500);
             } else if (this._dataType === 'local') {
+                if (!datasource._holdObjs) {
+                    datasource._holdObjs = datasource._allObjects || datasource._allObjs;
+                }
+
                 this._searchTimeout = setTimeout(function() {
                     self.buildMicroflowFilter();
                     datasource._allObjects = datasource._holdObjs.filter(datasource._filter);
