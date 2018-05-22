@@ -15,7 +15,7 @@ define([
     "dojo/html",
     "dojo/_base/event",
     "dojo/query",
-	"dojo/aspect"
+    "dojo/aspect"
 
 
 ], function(declare, _WidgetBase, dom, dojoDom, dojoProp, dojoGeometry, dojoClass, dojoStyle, dojoConstruct, dojoArray, dojoLang, dojoText, dojoHtml, dojoEvent, dojoQuery, dojoAspect) {
@@ -39,38 +39,38 @@ define([
         postCreate: function() {
             logger.debug(this.id + ".postCreate");
 
-			var gridNode = dojoQuery(".mx-name-" + this.targetGridName, this.domNode.parentNode)[0];
+            var gridNode = dojoQuery(".mx-name-" + this.targetGridName, this.domNode.parentNode)[0];
             if (gridNode) {
-				var self = this;
-				this._grid = dijit.registry.byNode(gridNode);
+                var self = this;
+                this._grid = dijit.registry.byNode(gridNode);
 
-				//if grid is loaded, add the search boxes. If not, listen for the postCreate.
-				if(this._grid._loaded || (this._grid.isLoaded &&this._grid.isLoaded())) {
-					this._updateRendering();
-				} else {
-					dojoAspect.after(this._grid, "postCreate", function(deferred){
-						self._updateRendering();
-						return deferred;
-					});
-				}
-			} else {
-				console.log("Could not find the grid node in postCreate.");
-			}
+                //if grid is loaded, add the search boxes. If not, listen for the postCreate.
+                if(this._grid._loaded || (this._grid.isLoaded &&this._grid.isLoaded())) {
+                    this._updateRendering();
+                } else {
+                    dojoAspect.after(this._grid, "postCreate", function(deferred){
+                        self._updateRendering();
+                        return deferred;
+                    });
+                }
+            } else {
+                console.log("Could not find the grid node in postCreate.");
+            }
         },
 
         update: function(obj, callback) {
             logger.debug(this.id + ".update");
 
             this._contextObj = obj;
-			var self = this;
-			//if the grid refreshes (like in a tab set to reload), re-apply the search
+            var self = this;
+            //if the grid refreshes (like in a tab set to reload), re-apply the search
             //this._grid.registerToPluginEvent("triggerOnRefresh", this._doSearch.bind(this), true)
             dojoAspect.after(this._grid, "applyContext", function(deferred, args) {
-				self._doSearch();
-				return deferred;
-			});
+                self._doSearch();
+                return deferred;
+            });
 
-			if(callback) callback();
+            if(callback) callback();
         },
 
         resize: function(box) {
