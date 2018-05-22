@@ -1,32 +1,32 @@
 .mx-datagrid-head th .dataGridSearchField {
-	margin-left: auto;
+    margin-left: auto;
     margin-right: auto;
     margin-bottom: 5px;
     font-weight: normal;
     width: 95%;
-	text-align: inherit;
-	padding-left: 25px;
+    text-align: inherit;
+    padding-left: 25px;
 }
 
 select.dataGridSearchField {
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .mx-datagrid-head th {
-	vertical-align: top !important;
+    vertical-align: top !important;
 }
 
 .dataGridSearchContainer {
-	position: relative;
+    position: relative;
 }
 
 .dataGridSearchContainer i {
-	position: absolute;
+    position: absolute;
     top: 10px;
     left: 2.5%;
-	margin-left: 9px;
+    margin-left: 9px;
     color: gray;
 }
 
