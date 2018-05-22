@@ -365,7 +365,7 @@ define([
             switch (searchObj.searchType) {
                 case "contains":
                     return function(rowObj) {
-                        return rowObj.get(searchAttr).toString().toLowerCase().includes(cleanSearchValue);
+                        return rowObj.get(searchAttr).toString().toLowerCase().indexOf(cleanSearchValue) !== -1;
                     }
                 case "starts-with":
                     return function(rowObj) {
