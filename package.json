@@ -1,12 +1,10 @@
 {
   "name": "DataGridColumnSearch",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "A Mendix widget that adds an input box under each column header to enable inline searching.",
   "license": "Apache 2",
   "author": "Eric Tieniber",
   "private": true,
-  "dependencies": {
-  },
   "devDependencies": {
     "del": "^2.2.2",
     "gulp": "^3.9.1",
