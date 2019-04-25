@@ -146,7 +146,7 @@ define([
         _addDateSearchBox: function(i) {
             var datePicker = mxui.widget.DatePicker({
                 "format": mx.parser.getI18nBundle()["dateFormat-short"],
-                "placeholder": "",
+                "placeholder": mx.parser.getDateFormatPlaceholder({type:"date"}),
                 "selector": "date",
                 "mode": "date"
             });
