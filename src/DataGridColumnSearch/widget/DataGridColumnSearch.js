@@ -144,17 +144,31 @@ define([
             this.connect(searchNode, "keypress", "_escapeReset");
         },
         _addDateSearchBox: function(i) {
-            var datePicker = mxui.widget.DatePicker({
-                "format": mx.parser.getI18nBundle()["dateFormat-short"],
-                "placeholder": mx.parser.getDateFormatPlaceholder({type:"date"}),
+            /*var datePicker = mxui.widget.DatePicker({
+                "format": mx.session.sessionData.locale.patterns.date, // mx.parser.getI18nBundle()["dateFormat-short"],
+                "placeholder": mx.session.sessionData.locale.patterns.date, // mx.parser.getDateFormatPlaceholder({type:"date"}),
                 "selector": "date",
                 "mode": "date"
-            });
+            });*/
 
-            datePicker.buildRendering();
-            datePicker.startup();
+            var DOMContainer = this._buildDOMContainer();
+            this._grid._gridColumnNodes[i].appendChild(DOMContainer);
+            //DOMContainer.appendChild(datePicker.domNode);
 
-            var searchNode = datePicker.domNode.children[1].children[0];
+            var datePicker = mxui.widget.DatePicker(
+                {
+                    placeholder: "",
+                    formatSettings: {
+                        "mode": "date"
+                    }
+                },
+                DOMContainer
+            );
+
+            //datePicker.buildRendering();
+            //datePicker.startup();
+
+            var searchNode = datePicker.domNode.children[0];
             var searchAttr = this._grid._visibleColumns[i].tag;
 
 
@@ -179,12 +193,9 @@ define([
                 "widget": datePicker,
                 "localized": localized
             };
-            var DOMContainer = this._buildDOMContainer();
-            this._grid._gridColumnNodes[i].appendChild(DOMContainer);
 
             dojoClass.add(searchNode, "dataGridSearchField");
 
-            DOMContainer.appendChild(datePicker.domNode);
             this._searchBoxes.push(searchObj);
 
             this.connect(searchNode, "keyup", "_doSearch");
@@ -320,15 +331,14 @@ define([
                         return "";
                     }
 
-                    if (!searchObj.localized) {
-                        var deLocalizedDate = window.mx.parser.delocalizeEpoch(theDate);
-                        theDate = new Date(deLocalizedDate);
-                    }
-
                     var today = theDate.getTime();
-                    var tomorrow = theDate.getTime() + this._MS_IN_DAY;
-                    var queryString = "(";
 
+                    //change selected date from the user's time zone to UTC
+                    if (!searchObj.localized) {
+                        today = theDate.getTime() - (theDate.getTimezoneOffset() * 60 * 1000)
+                    }
+                    var tomorrow = today + this._MS_IN_DAY;
+                    var queryString = "(";
 
                     queryString += searchObj.attr + ">=" + today;
                     queryString += " and ";
