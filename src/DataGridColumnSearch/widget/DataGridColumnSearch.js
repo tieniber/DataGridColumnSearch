@@ -144,33 +144,20 @@ define([
             this.connect(searchNode, "keypress", "_escapeReset");
         },
         _addDateSearchBox: function(i) {
-            /*var datePicker = mxui.widget.DatePicker({
-                "format": mx.session.sessionData.locale.patterns.date, // mx.parser.getI18nBundle()["dateFormat-short"],
-                "placeholder": mx.session.sessionData.locale.patterns.date, // mx.parser.getDateFormatPlaceholder({type:"date"}),
-                "selector": "date",
-                "mode": "date"
-            });*/
-
             var DOMContainer = this._buildDOMContainer();
             this._grid._gridColumnNodes[i].appendChild(DOMContainer);
-            //DOMContainer.appendChild(datePicker.domNode);
-
+        
             var datePicker = mxui.widget.DatePicker(
                 {
                     placeholder: "",
-                    formatSettings: {
-                        "mode": "date"
-                    }
+                    format: "date",
+                    mode: "date"
                 },
                 DOMContainer
             );
 
-            //datePicker.buildRendering();
-            //datePicker.startup();
-
             var searchNode = datePicker.domNode.children[0];
             var searchAttr = this._grid._visibleColumns[i].tag;
-
 
             var columnEntity = this.gridEntity;
             var currentColumn = this._grid._visibleColumns[i];
