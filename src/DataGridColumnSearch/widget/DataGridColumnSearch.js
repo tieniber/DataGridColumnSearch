@@ -94,6 +94,9 @@ define([
                     case "xpath":
                         this._dataType = "xpath";
                         break;
+                    case "database": // for Mendix 9
+                        this._dataType = "xpath";
+                        break;
                     default:
                         this._dataType = "unsupported";
                         break;
