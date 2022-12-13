@@ -94,6 +94,9 @@ define([
                     case "xpath":
                         this._dataType = "xpath";
                         break;
+                    case "database": // for Mendix 9
+                        this._dataType = "xpath";
+                        break;
                     default:
                         this._dataType = "unsupported";
                         break;
@@ -384,7 +387,8 @@ define([
                     }
 
                     if (!searchObj.localized) {
-                        var deLocalizedDate = window.mx.parser.delocalizeEpoch(theDate);
+                        var date = new Date(Number(theDate)); 
+                        var deLocalizedDate = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(),date.getUTCDate(), date.getUTCHours(),date.getUTCMinutes(), date.getUTCSeconds());
                         theDate = new Date(deLocalizedDate);
                     }
 
